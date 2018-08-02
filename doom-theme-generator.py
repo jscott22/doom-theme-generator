@@ -5,6 +5,8 @@ import json
 import jinja2
 from chroma import Color
 
+COLORS_256_LIST = []
+
 
 def lighter(color, amt):
     return Color((color.hls[0], color.hls[1] * (1.0 + amt), color.hls[2]),
@@ -16,18 +18,36 @@ def darker(color, amt):
                  'HLS')
 
 
-def extract_colorscheme(json_file_name):
+def blend_colors(color1, color2):
+    return Color(((color1.rgb[0] + color2.rgb[0]) / 2,
+                  (color1.rgb[1] + color2.rgb[1]) / 2,
+                  (color1.rgb[2] + color2.rgb[2]) / 2), 'RGB')
+
+
+def round_to_256_colors(base_color):
+    lowest = 3 * (256**2)
+    for color in COLORS_256_LIST:
+        c = Color(color["hexString"])
+        distance = (c.rgb[0] - base_color.rgb[0])**2 + (
+            c.rgb[1] - base_color.rgb[1])**2 + (
+                c.rgb[2] - base_color.rgb[2])**2
+        if distance < lowest:
+            lowest = distance
+            nearest_color = c
+    return nearest_color
+
+
+def extract_json(json_file_name):
     with open(json_file_name) as json_file:
-        colors = json.load(json_file)
-    return colors
+        data = json.load(json_file)
+    return data
 
 
 def terminal_sexy_to_template(colors):
+    # default colors
     yellow = Color(colors["color"][11])
     red = Color(colors["color"][1])
-    orange = Color(
-        ((yellow.rgb[0] + red.rgb[0]) / 2, (yellow.rgb[1] + red.rgb[1]) / 2,
-         (yellow.rgb[2] + red.rgb[2]) / 2), 'RGB')
+    orange = blend_colors(yellow, red)
     new_colors = {
         "bg": Color(colors["background"]),
         "bg-alt": lighter(Color(colors["background"]), 0.1),
@@ -60,6 +80,14 @@ def terminal_sexy_to_template(colors):
         new_colors["dark-cyan"] = darker(new_colors["cyan"], 0.2)
     if new_colors["green"] == new_colors["teal"]:
         new_colors["teal"] = lighter(new_colors["green"], 0.2)
+    if new_colors["violet"] == new_colors["magenta"]:
+        new_colors["violet"] = lighter(new_colors["magenta"], 0.2)
+
+    # 256 colors
+    new_colors_256 = {}
+    for color_name, color in new_colors.iteritems():
+        new_colors_256[color_name + "256"] = round_to_256_colors(color)
+    new_colors.update(new_colors_256)
     return new_colors
 
 
@@ -72,13 +100,15 @@ def make_file(file_name, theme):
 
 
 def main(argv):
+    global COLORS_256_LIST
     theme = {}
-    outuput_file = "doom-" + argv[2] + "-theme.el"
-    colors = extract_colorscheme(argv[1])
+    output_file = "doom-" + argv[2] + "-theme.el"
+    colors = extract_json(argv[1])
+    COLORS_256_LIST = extract_json("256colors.json")
     colors = terminal_sexy_to_template(colors)
     theme["name"] = argv[2]
     theme["colors"] = colors
-    make_file(outuput_file, theme)
+    make_file(output_file, theme)
 
 
 if __name__ == "__main__":
