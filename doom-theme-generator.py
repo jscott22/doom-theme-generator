@@ -9,8 +9,8 @@ COLORS_256_LIST = []
 
 
 def lighter(color, amt):
-    return Color((color.hls[0], color.hls[1] * (1.0 + amt), color.hls[2]),
-                 'HLS')
+    return Color(
+        (color.hls[0], amt + (1.0 - amt) * color.hls[1], color.hls[2]), 'HLS')
 
 
 def darker(color, amt):
@@ -48,20 +48,26 @@ def terminal_sexy_to_template(colors):
     yellow = Color(colors["color"][11])
     red = Color(colors["color"][1])
     orange = blend_colors(yellow, red)
+    if Color(colors["foreground"]).hls[1] > 0.5:
+        bases_function = darker
+        bg_fg_function = lighter
+    else:
+        bases_function = lighter
+        bg_fg_function = darker
     new_colors = {
         "bg": Color(colors["background"]),
-        "bg-alt": lighter(Color(colors["background"]), 0.1),
+        "bg-alt": bg_fg_function(Color(colors["background"]), 0.1),
         "fg": Color(colors["foreground"]),
-        "fg-alt": lighter(Color(colors["foreground"]), 0.2),
-        "base8": darker(Color(colors["foreground"]), 0.1),
-        "base7": darker(Color(colors["foreground"]), 0.2),
-        "base6": darker(Color(colors["foreground"]), 0.3),
-        "base5": darker(Color(colors["foreground"]), 0.4),
-        "base4": darker(Color(colors["foreground"]), 0.5),
-        "base3": darker(Color(colors["foreground"]), 0.6),
-        "base2": darker(Color(colors["foreground"]), 0.7),
-        "base1": darker(Color(colors["foreground"]), 0.8),
-        "base0": darker(Color(colors["foreground"]), 0.9),
+        "fg-alt": bg_fg_function(Color(colors["foreground"]), 0.2),
+        "base8": bases_function(Color(colors["foreground"]), 0.1),
+        "base7": bases_function(Color(colors["foreground"]), 0.2),
+        "base6": bases_function(Color(colors["foreground"]), 0.3),
+        "base5": bases_function(Color(colors["foreground"]), 0.4),
+        "base4": bases_function(Color(colors["foreground"]), 0.5),
+        "base3": bases_function(Color(colors["foreground"]), 0.6),
+        "base2": bases_function(Color(colors["foreground"]), 0.7),
+        "base1": bases_function(Color(colors["foreground"]), 0.8),
+        "base0": bases_function(Color(colors["foreground"]), 0.9),
         "red": red,
         "orange": orange,
         "green": Color(colors["color"][2]),
@@ -78,10 +84,10 @@ def terminal_sexy_to_template(colors):
         new_colors["dark-blue"] = darker(new_colors["blue"], 0.2)
     if new_colors["cyan"] == new_colors["dark-cyan"]:
         new_colors["dark-cyan"] = darker(new_colors["cyan"], 0.2)
-    if new_colors["green"] == new_colors["teal"]:
-        new_colors["teal"] = lighter(new_colors["green"], 0.2)
+    if new_colors["teal"] == new_colors["green"]:
+        new_colors["green"] = darker(new_colors["teal"], 0.2)
     if new_colors["violet"] == new_colors["magenta"]:
-        new_colors["violet"] = lighter(new_colors["magenta"], 0.2)
+        new_colors["magenta"] = darker(new_colors["violet"], 0.2)
 
     # 256 colors
     new_colors_256 = {}
