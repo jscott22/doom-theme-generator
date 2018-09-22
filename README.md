@@ -18,7 +18,7 @@ Generate a theme from the colorscheme you just dowloaded :
 ``python doom-theme-generator.py <colorscheme_file> <name_of_the_theme>``
 
 
-Move the generated theme to your doom-themes instalation directory  
+Move the generated theme to your doom-themes installation directory  
 ``mv doom-<name_of_the_theme>-theme.el path/to/your/doom-themes``
 
 
