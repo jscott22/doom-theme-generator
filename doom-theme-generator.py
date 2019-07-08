@@ -91,7 +91,7 @@ def terminal_sexy_to_template(colors):
 
     # 256 colors
     new_colors_256 = {}
-    for color_name, color in new_colors.iteritems():
+    for color_name, color in new_colors.items():
         new_colors_256[color_name + "256"] = round_to_256_colors(color)
     new_colors.update(new_colors_256)
     return new_colors
